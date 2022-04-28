@@ -1,0 +1,116 @@
+﻿@model List<InvoiceModel>
+@{
+    int Page = (int)ViewBag.Page;
+    EurocrossConfirm.Models.InvoiceQueryModel query = Newtonsoft.Json.JsonConvert
+   .DeserializeObject<EurocrossConfirm.Models.InvoiceQueryModel>
+   (Session["Invoice_ListIndex_Search"].ToString());
+}
+<table class="table table-striped table-hover" id="datatable">
+    <thead>
+        <form action="@Url.Action("Search")" method="post">
+            <tr>
+                <th>
+
+                </th>
+                <th>
+                    <input type="text" class="form-control" id="srcInvoice" name="InvoiceNo" placeholder="Invoice No" value="@query.InvoiceNo">
+                </th>
+                <th>
+                    @*<input type="text" class="form-control" id="srcStartDate" name="StartDate" placeholder="Başlangıç Tarihi">
+                        <input type="text" class="form-control" id="srcFinalDate" name="FinalDate" placeholder="Bitiş Tarihi">*@
+                </th>
+                <th>
+                    <input type="text" class="form-control date-picker" id="srcPytStartDate" name="PytStartDate" placeholder="Start Date" value="@query.PytStartDate.ToString("dd.MM.yyyy")">
+                    <input type="text" class="form-control date-picker" id="srcPytFinalDate" name="PytFinalDate" placeholder="Final Date" value="@query.PytFinalDate.ToString("dd.MM.yyyy")">
+                </th>
+                <th>
+                    <input type="text" class="form-control" id="srcCCode" name="CCode" placeholder="Current Account No" value="@query.CCode">
+                </th>
+                <th>
+                    <input type="text" class="form-control" id="srcCName" name="CName" placeholder="Current Account Name" value="@query.CName">
+                </th>
+                <th>
+                </th>
+                <th>
+                    <button class="btn btn-sm green" type="submit" id="search">Search</button>
+                </th>
+            </tr>
+        </form>
+        <tr>
+            <th>
+                Select <input type="checkbox" id="selectall">
+            </th>
+            <th>
+                Invoice No
+            </th>
+            <th>
+                Invoice Date
+            </th>
+            <th>
+                Payment Date
+            </th>
+            <th>
+                Account No
+            </th>
+            <th>
+                Account Name
+            </th>
+            <th>
+                Amount (TL)
+            </th>
+            <th>
+                Currency Amount
+            </th>
+            <th>
+                Customer Bank
+            </th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>
+                    <input type="checkbox" value="@item.LOGICALREF" name="chkSelect">
+                </td>
+                <td>
+                    @item.FICHENO
+                </td>
+                <td>
+                    @item.DATE_.ToString("dd.MM.yyyy")
+                </td>
+                <td>
+                    @item.PYTDATE.ToString("dd.MM.yyyy")
+                </td>
+                <td>
+                    @item.CLCODE
+                </td>
+                <td>
+                    @item.CLNAME
+                </td>
+                <td>
+                    @item.TOTAL.ToString("n2")
+                </td>
+                <td>
+                    @item.CURTOTAL.ToString("n2") @item.CURNAME
+                </td>
+                <td>
+                    <select class="form-control" name="slcCBank" id="slcBank_@item.LOGICALREF">
+                        @foreach (var bank in item.BANKALAR)
+                        {
+                            if (!String.IsNullOrEmpty(bank.IBAN))
+                            {
+                                <option value="@(Newtonsoft.Json.JsonConvert.SerializeObject(bank))" @(bank.DOVIZ == query.CurrencyCode ? "selected" : "")>@(bank.AD)(@bank.HESAPNO)</option>
+                            }
+                        }
+                    </select>
+                </td>
+
+            </tr>
+        }
+
+
+    </tbody>
+</table>
+
+@Html.MyPaging(Page, null, null, "_ListIndex", "Invoice")

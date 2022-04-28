@@ -1,0 +1,32 @@
+﻿@model HttpPostedFileBase
+@{
+
+}
+<div class="modal-content">
+    <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+        <h4 class="modal-title">@ViewBag.Title</h4>
+    </div>
+    <div class="modal-body">
+        <h2>UploadFile</h2>
+        @using (Html.BeginForm("AddProject", "Home", FormMethod.Post, new { enctype = "multipart/form-data" }))
+        {
+    <div>
+        @Html.TextBox("file", "", new { type = "file" }) <br />
+        <input type="submit" class="btn blue" value="Upload" />
+
+        @if (!string.IsNullOrEmpty(ViewBag.Message))
+        {
+            <script>alert("@ViewBag.Message");</script>
+           
+        }
+    </div>
+        }
+    </div>
+
+    @*<div class="modal-footer">
+        <button type="button" class="btn default" data-dismiss="modal">Close</button>
+        <button type="submit" class="btn blue">Save</button>
+    </div>*@
+</div>
+

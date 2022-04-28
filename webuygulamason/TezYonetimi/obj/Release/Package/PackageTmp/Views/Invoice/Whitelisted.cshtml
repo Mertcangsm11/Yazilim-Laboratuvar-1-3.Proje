@@ -1,0 +1,133 @@
+﻿@model List<InvoiceModel>
+
+               @{
+                   EurocrossConfirm.Models.InvoiceQueryModel query = Newtonsoft.Json.JsonConvert
+                       .DeserializeObject<EurocrossConfirm.Models.InvoiceQueryModel>
+                       (Session["Invoice_WhitelistedList_Search"].ToString());
+               }
+    <!-- BEGIN PAGE HEADER-->
+    <div class="row">
+        <div class="col-md-12">
+            <!-- BEGIN PAGE TITLE & BREADCRUMB-->
+            <h3 class="page-title">
+                Invoices Not to be approved
+            </h3>
+            <!-- END PAGE TITLE & BREADCRUMB-->
+        </div>
+    </div>
+    <!-- END PAGE HEADER-->
+    <!-- BEGIN PAGE CONTENT-->
+    <div class="row">
+        <div class="col-md-12">
+            <!-- Begin: life time stats -->
+            <div class="portlet">
+                <div class="portlet-title">
+                    <div class="caption">
+                        <i class="fa fa-file-o"></i>Invoice List
+                    </div>
+                    <div class="actions">
+                        @*<button class="btn default yellow-stripe" id="send" data-href="@Url.Action("SendApprove", "Invoice")">
+                            <i class="fa fa-plus"></i>
+                            <span class="hidden-480">
+                                Onaya Gönder
+                            </span>
+                        </button>*@
+                    </div>
+                </div>
+                <div class="portlet-body" id="DataContainer">
+                    @Html.Action("WhitelistedList")
+                </div>
+            </div>
+            <!-- End: life time stats -->
+        </div>
+    </div>
+    <!-- END PAGE CONTENT-->
+
+
+    @section scripts {
+
+        
+
+        <script>
+            
+          
+
+            $.fn.dataTable.ext.search.push(
+              function (settings, data, dataIndex) {
+                  var srcinvoice = $('#srcInvoice').val();
+
+                  var invoiceno = data[1] || "";
+
+                  if (invoiceno.indexOf(srcinvoice) > -1) {
+                      return true;
+                  }
+                  return false;
+              });
+
+
+            $("#selectall").change(function () {
+                if ($("#selectall").attr('checked')) {
+                    $("input[type=checkbox]").prop("checked", true).uniform('refresh');;
+                } else {
+                    $("input[type=checkbox]").prop("checked", false).uniform('refresh');;
+                    
+                }
+            });
+
+
+            
+            function getPage(control) {
+
+                $.ajax({
+                    url: $(control).attr("data-href"),
+                    type: "GET",
+                    success: function (result) {
+                        JsonResult(result, function (r) {
+                            $("#" + $(control).attr("data-replace")).html(r);
+                            //Layout.fixContentHeight(); // fix content height
+                            if ($(control).attr("data-click") != undefined && $(control).attr("data-click") != "")
+                                eval($(control).attr("data-click"));
+                            App.initAjax();
+                        });
+                    },
+                    error: function (result) {
+                        bootbox.alert("An error occured while request is sending");
+                    },
+                    beforeSend: function () {
+                        App.blockUI({
+                            target: $("#" + $(control).attr("data-replace")),
+                            animate: true
+                        });
+                        $(control).button('loading');
+                    },
+                    complete: function () {
+                        App.unblockUI($("#" + $(control).attr("data-replace")));
+                        $(control).button('reset');
+                    }
+                });
+
+            }
+
+
+
+            function JsonResult(result, onsuccess) {
+                if (result.IsOK) {
+                    onsuccess(result.Result);
+
+                    //Toaster.alert("İşleme devam edilemiyor", result.Error.ErrorMessage, 5000);
+                    //bootbox.alert(result.Error.ErrorMessage);
+                }
+                else {
+                    bootbox.alert(result.Message);
+                }
+            }
+
+
+        </script>
+
+    }
+
+   
+
+
+

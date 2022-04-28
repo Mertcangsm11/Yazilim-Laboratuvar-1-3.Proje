@@ -1,0 +1,73 @@
+﻿@model UserModel
+@{ 
+    
+}
+
+
+<div class="modal-content">
+
+
+    <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+        <h4 class="modal-title">@ViewBag.Title</h4>
+    </div>
+    <div class="modal-body">
+        <form action="@ViewBag.Action" method="post" id="modalform">
+            @Html.HiddenFor(c=> c.ID)
+            <div class="row">
+                <!--<div class="col-md-6">
+                    <div class="form-group">
+                        <label class="control-label col-md-3">Group No</label>
+                        <div class="col-md-9">
+                            <select name="GROUPID" class="form-control">
+                                @foreach (var item in (List<SelectListItem>)ViewBag.GroupList)
+                                {
+                                    <option value="@item.Value" @(item.Value == Model.GROUPID.ToString() ? "selected" : "")>@item.Text</option>
+                                }
+                            </select>-->
+
+                            @*@Html.TextBoxFor(c => c.GROUPID, new { @class = "form-control" })*@
+                        <!--</div>
+                    </div>
+                </div>-->
+                <!--/span-->
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label class="control-label col-md-3">E-Mail</label>
+                        <div class="col-md-9">
+                            @Html.TextBoxFor(c => c.EMAIL, new { @class = "form-control" })
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label class="control-label col-md-3">Name Surname</label>
+                        <div class="col-md-9">
+                            @Html.TextBoxFor(c => c.FULLNAME, new { @class = "form-control" })
+                        </div>
+                    </div>
+                </div>
+                <!--/span-->
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label class="control-label col-md-3">Password</label>
+                        <div class="col-md-9">
+                            @*@Html.TextBoxFor(c => c.PASSWORD, new { @class = "form-control" })*@
+                            @Html.PasswordFor(c => c.PASSWORD, new { @class = "form-control" })
+                            @*@Html.TextBox("PASSWORD", "", new { @class = "form-control" })*@
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn default" data-dismiss="modal">Close</button>
+                <button type="submit" class="btn blue">Save</button>
+            </div>
+        </form>
+    </div>
+    
+</div>

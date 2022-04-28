@@ -1,0 +1,232 @@
+﻿
+@{
+    List<OwnBankModel> bankalistesi = (List<OwnBankModel>)ViewBag.BankList;
+    List<GroupModel> grouplistesi = (List<GroupModel>)ViewBag.GroupList;
+    EurocrossConfirm.Models.InvoiceQueryModel query = Newtonsoft.Json.JsonConvert
+.DeserializeObject<EurocrossConfirm.Models.InvoiceQueryModel>
+(Session["Invoice_ListIndex_Search"].ToString());
+}
+
+<!-- BEGIN PAGE HEADER-->
+<div class="row">
+    <div class="col-md-12">
+        <!-- BEGIN PAGE TITLE & BREADCRUMB-->
+        <h3 class="page-title">
+            Invoice to Send Approval
+        </h3>
+        <!-- END PAGE TITLE & BREADCRUMB-->
+    </div>
+</div>
+<!-- END PAGE HEADER-->
+<!-- BEGIN PAGE CONTENT-->
+<div class="row">
+    <div class="col-md-12">
+        <!-- Begin: life time stats -->
+        <div class="portlet">
+            <div class="portlet-title">
+                <div class="caption">
+                    <i class="fa fa-file-o"></i>Invoice List
+                </div>
+                <div class="actions">
+
+
+
+                    <button class="btn default yellow-stripe send" data-href="@Url.Action("SendApprove", "Invoice")">
+                        <i class="fa fa-plus"></i>
+                        <span class="hidden-480">
+                            Send To Approve
+                        </span>
+                    </button>
+
+                    <button class="btn default red-stripe ignore" data-href="@Url.Action("IgnoreInvoice", "Invoice")">
+                        <i class="fa fa-times"></i>
+                        <span class="hidden-480">
+                            Ignore
+                        </span>
+                    </button>
+                    <select class="form-control" id="slcGroup">
+                        @foreach (var item in grouplistesi)
+                        {
+                            <option value="@item.ID" >@item.GROUPNAME </option>
+                        }
+                    </select>
+                    <select class="form-control" id="slcBank" onchange="selectBank()">
+                        @foreach (var item in bankalistesi)
+                        {
+                            <option value="@item.CODE" @(query.BankCode == item.CODE ? "selected" : "")>@item.DEFINITION (@item.CODE)</option>
+                        }
+                    </select>
+                </div>
+            </div>
+            <div class="portlet-body" id="DataContainer">
+                @Html.Action("ListIndex")
+            </div>
+        </div>
+        <!-- End: life time stats -->
+    </div>
+</div>
+<!-- END PAGE CONTENT-->
+@section scripts {
+
+
+
+    <script>
+
+        $("#selectall").change(function () {
+            if ($("#selectall").attr('checked')) {
+                $("input[type=checkbox]").prop("checked", true).uniform('refresh');;
+            } else {
+                $("input[type=checkbox]").prop("checked", false).uniform('refresh');;
+
+            }
+        });
+
+        $(".send").click(function () {
+            var slcGroup = $("#slcGroup").val();
+
+            if (slcGroup == undefined || slcGroup == "0") {
+                bootbox.alert("Please Select the User Group to be sent for approval");
+                return;
+            }
+
+            var arr = $("input[name=chkSelect]:checked");
+            if (arr.length == 0) {
+                bootbox.alert("No invoice selected");
+            } else {
+
+                bootbox.prompt("Are you sure to send invoices <strong>" + $("#slcGroup option:selected").text() + "</strong> group for approval ?", function (result) {
+                    if (result === null) {
+
+                    } else {
+
+                        var liste = new Array();
+                        var listeBank = new Array();
+                        for (var i = 0; i < arr.length; i++) {
+                            liste.push(arr[i].value);
+                            listeBank.push($("#slcBank_" + arr[i].value).val());
+                        }
+
+                        $.ajax({
+                            url: $(".send").attr('data-href'),
+                            data: $.param({ data: liste, bank: $("#slcBank").val(), tobank: listeBank, groupid: $("#slcGroup").val(), description: result }, true),
+                            success: function (result) {
+                                if (result.IsSuccess)
+                                    window.location = "/Invoice/Index";
+                                else
+                                    bootbox.alert(result.Message);
+                            },
+                            method: "POST",
+                            beforeSend: function () {
+                                App.blockUI({
+                                    target: "body",
+                                    animate: true
+                                });
+                            },
+                            complete: function () {
+                                App.unblockUI("body");
+                            }
+                        });
+
+                    }
+                });
+            }
+        });
+
+        $(".ignore").click(function () {
+            var arr = $("input[name=chkSelect]:checked");
+            if (arr.length == 0) {
+                bootbox.alert("Hiç Fatura Seçmediniz");
+            } else {
+                bootbox.confirm("Are you sure to ignore invoices?", function (result) {
+
+                    if (result) {
+                        var liste = new Array();
+                        for (var i = 0; i < arr.length; i++) {
+                            liste.push(arr[i].value);
+                        }
+
+                        $.ajax({
+                            url: $(".ignore").attr('data-href'),
+                            data: $.param({ data: liste }, true),
+                            success: function (result) {
+                                if (result.IsSuccess)
+                                    window.location = "/Invoice/Index";
+                                else
+                                    bootbox.alert(result.Message);
+                            },
+                            method: "POST",
+                            beforeSend: function () {
+                                App.blockUI({
+                                    target: "body",
+                                    animate: true
+                                });
+                            },
+                            complete: function () {
+                                App.unblockUI("body");
+                            }
+                        });
+                    }
+                });
+            }
+        });
+
+        function getPage(control) {
+
+            $.ajax({
+                url: $(control).attr("data-href"),
+                type: "GET",
+                success: function (result) {
+                    JsonResult(result, function (r) {
+                        $("#" + $(control).attr("data-replace")).html(r);
+                        //Layout.fixContentHeight(); // fix content height
+                        if ($(control).attr("data-click") != undefined && $(control).attr("data-click") != "")
+                            eval($(control).attr("data-click"));
+                        App.initAjax();
+                    });
+                },
+                error: function (result) {
+                    bootbox.alert("An error occured while request is sending");
+                },
+                beforeSend: function () {
+                    App.blockUI({
+                        target: $("#" + $(control).attr("data-replace")),
+                        animate: true
+                    });
+                    $(control).button('loading');
+                },
+                complete: function () {
+                    App.unblockUI($("#" + $(control).attr("data-replace")));
+                    $(control).button('reset');
+                }
+            });
+
+        }
+
+
+
+        function JsonResult(result, onsuccess) {
+            if (result.IsOK) {
+                onsuccess(result.Result);
+
+                //Toaster.alert("İşleme devam edilemiyor", result.Error.ErrorMessage, 5000);
+                //bootbox.alert(result.Error.ErrorMessage);
+            }
+            else {
+                bootbox.alert(result.Message);
+            }
+        }
+
+
+        function selectBank() {
+            var val = $("#slcBank").val();
+
+            $.get("/Invoice/SelectBank?code=" + val, function () {
+                window.location = "/Invoice/Index";
+            });
+
+        }
+
+    </script>
+
+}
+

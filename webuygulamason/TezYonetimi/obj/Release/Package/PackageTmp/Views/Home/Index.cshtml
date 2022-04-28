@@ -1,0 +1,8 @@
+﻿@{
+    var user = Newtonsoft.Json.JsonConvert.DeserializeObject<LoginUserModel>(User.Identity.Name);
+}
+
+    <div>
+        Welcome, @user.Name
+    </div>
+

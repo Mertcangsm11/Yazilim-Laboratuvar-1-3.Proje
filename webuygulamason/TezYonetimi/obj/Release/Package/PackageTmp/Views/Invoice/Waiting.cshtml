@@ -1,0 +1,322 @@
+﻿@model List<InvoiceModel>
+    @{
+        var user = Newtonsoft.Json.JsonConvert.DeserializeObject<LoginUserModel>(User.Identity.Name);
+    }
+
+    <!-- BEGIN PAGE HEADER-->
+    <div class="row">
+        <div class="col-md-12">
+            <!-- BEGIN PAGE TITLE & BREADCRUMB-->
+            <h3 class="page-title">
+                Invoices Waiting for Approval
+            </h3>
+            <!-- END PAGE TITLE & BREADCRUMB-->
+        </div>
+    </div>
+    <!-- END PAGE HEADER-->
+    <!-- BEGIN PAGE CONTENT-->
+    <div class="row">
+        <div class="col-md-12">
+            <!-- Begin: life time stats -->
+            <div class="portlet">
+                <div class="portlet-title">
+                    <div class="caption">
+                        <i class="fa fa-file-o"></i>Invoice List
+                    </div>
+                    @if (user.GroupID == 2 || user.GroupID == 3)
+                    {
+                        <div class="actions">
+                            <button class="btn default green-stripe approve" data-href="@Url.Action("ApproveInvoice", "Invoice")">
+                                <i class="fa fa-plus"></i>
+                                <span class="hidden-480">
+                                    Approve
+                                </span>
+                            </button>
+                            <button class="btn default red-stripe reject" data-href="@Url.Action("RejectInvoice", "Invoice")">
+                                <i class="fa fa-trash-o"></i>
+                                <span class="hidden-480">
+                                    Decline
+                                </span>
+                            </button>
+                        </div>
+                    }
+                </div>
+                <div class="portlet-body">
+                    <table class="table table-striped table-hover" id="datatable">
+                        <thead>
+                            <tr>
+
+                                <th>
+                                    <button class="btn btn-sm green" id="search">Search</button>
+                                </th>
+                                <th>
+                                    <input type="text" class="form-control" id="srcInvoice">
+                                </th>
+                                <th>
+                                </th>
+                                <th>
+                                    <input type="text" class="form-control" id="srcCCode">
+                                </th>
+                                <th>
+                                    <input type="text" class="form-control" id="srcCName">
+                                </th>
+                                <th>
+                                </th>
+                                <th>
+                                </th>
+                                <th>
+                                    <input type="text" class="form-control" id="srcSender">
+                                </th>
+                                <th>
+                                </th>
+                                <th>
+                                </th>
+                                <th>
+                                    
+                                </th>
+                            </tr>
+                            <tr>
+
+                                <th>
+                                    @if (user.GroupID == 2 || user.GroupID == 3)
+                                    {
+                                        @: Seç <input type="checkbox" id="selectall">
+                                    }
+                                </th>
+
+                                <th>
+                                    Invoice No
+                                </th>
+                                <th>
+                                    Invoice Date
+                                </th>
+                                <th>
+                                    Account Code
+                                </th>
+                                <th>
+                                    Account Name
+                                </th>
+                                <th>
+                                    Amount (TL)
+                                </th>
+                                <th>
+                                    Currency Amount
+                                </th>
+                                <th>
+                                    Sender
+                                </th>
+                                <th>
+                                    Sending Date
+                                </th>
+                                <th>
+                                    From Bank Account
+                                </th>
+                                <th>
+                                    To Bank Account
+                                </th>
+
+                            </tr>
+
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model)
+                            {
+                                <tr>
+
+                                    <td>
+                                        @if (user.GroupID == 2 || user.GroupID == 3)
+                                    {
+                                        <input type="checkbox" value="@item.LOGICALREF" name="chkSelect">
+                                    }
+                                </td>
+
+                                <td>
+                                    @item.FICHENO
+                                </td>
+                                <td>
+                                    <span style="display:none">@item.DATE_.ToString("yyyy.MM.dd")</span> @item.DATE_.ToString("dd.MM.yyyy")
+                                </td>
+                                <td>
+                                    @item.CLCODE
+                                </td>
+                                <td>
+                                    @item.CLNAME
+                                </td>
+                                <td>
+                                    @item.TOTAL.ToString("n2")
+                                </td>
+                                    <td>
+                                        @item.CURTOTAL.ToString("n2") @item.CURNAME
+                                    </td>
+                                <td>
+                                    @item.ONAYAGONDEREN
+                                </td>
+                                <td>
+                                    <span style="display:none">@item.ONAYAGONDERMETARIHI.ToString("yyyy.MM.dd HH:mm")</span> @item.ONAYAGONDERMETARIHI.ToString("dd.MM.yyyy HH:mm:ss")
+                                </td>
+                                    <td>
+                                        @item.FROMBANKCODE
+                                    </td>
+                                    <td>
+                                        @item.BANKIBAN
+                                    </td>
+                            </tr>
+                            }
+
+
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <!-- End: life time stats -->
+        </div>
+    </div>
+    <!-- END PAGE CONTENT-->
+
+
+    @section scripts {
+
+        <script src="~/assets/scripts/jquery.dataTables.min.js"></script>
+        <script type="text/javascript" src="/assets/plugins/data-tables/DT_bootstrap.js"></script>
+        <script src="/assets/scripts/core/datatable.js"></script>
+
+        <script>
+
+
+
+            $.fn.dataTable.ext.search.push(
+              function (settings, data, dataIndex) {
+                  var srcinvoice = $('#srcInvoice').val();
+                  var srcccode = $('#srcCCode').val();
+                  var srccname = $('#srcCName').val();
+                  var srcsender = $('#srcSender').val();
+
+
+                  var invoiceno = data[1] || "";
+                  var ccode = data[3] || "";
+                  var cname = data[4] || "";
+                  var sender = data[6] || "";
+
+                  if (invoiceno.indexOf(srcinvoice) > -1 && ccode.indexOf(srcccode) > -1
+                      && cname.indexOf(srccname) > -1 && sender.indexOf(srcsender) > -1) {
+                      return true;
+                  }
+                  return false;
+              });
+
+
+            $("#selectall").change(function () {
+                if ($("#selectall").attr('checked')) {
+                    $("input[type=checkbox]").prop("checked", true).uniform('refresh');;
+                } else {
+                    $("input[type=checkbox]").prop("checked", false).uniform('refresh');;
+
+                }
+            });
+
+
+
+            $(".approve").click(function () {
+                var arr = $("input[name=chkSelect]:checked");
+                if (arr.length == 0) {
+                    bootbox.alert("Hiç Fatura Seçmediniz");
+                } else {
+
+                    bootbox.prompt("Are you sure to approve invoices?", function (result) {
+                        if (result === null) {
+
+                        } else {
+                            //boş geçme engellebilir
+                            var liste = new Array();
+                            for (var i = 0; i < arr.length; i++) {
+                                liste.push(arr[i].value);
+                            }
+
+                            $.ajax({
+                                url: $(".approve").attr('data-href'),
+                                data: $.param({ data: liste, description: result }, true),
+                                success: function (result) {
+                                    if (result.IsSuccess)
+                                        window.location = "/Invoice/Waiting";
+                                    else
+                                        bootbox.alert(result.Message);
+                                },
+                                method: "POST",
+                                beforeSend: function () {
+                                    App.blockUI({
+                                        target: "body",
+                                        animate: true
+                                    });
+                                },
+                                complete: function () {
+                                    App.unblockUI("body");
+                                }
+                            });
+                        }
+                    });
+                }
+            });
+
+            $(".reject").click(function () {
+                var arr = $("input[name=chkSelect]:checked");
+                if (arr.length == 0) {
+                    bootbox.alert("No invoice selected");
+                } else {
+                    bootbox.prompt("Are you sure to <b>decline</b> invoices?", function (result) {
+                        if (result === null) {
+
+                        } else {
+                            var liste = new Array();
+                            for (var i = 0; i < arr.length; i++) {
+                                liste.push(arr[i].value);
+                            }
+
+                            $.ajax({
+                                url: $(".reject").attr('data-href'),
+                                data: $.param({ data: liste, description: result }, true),
+                                success: function (result) {
+                                    if (result.IsSuccess)
+                                        window.location = "/Invoice/Waiting";
+                                    else
+                                        bootbox.alert(result.Message);
+                                },
+                                method: "POST",
+                                beforeSend: function () {
+                                    App.blockUI({
+                                        target: "body",
+                                        animate: true
+                                    });
+                                },
+                                complete: function () {
+                                    App.unblockUI("body");
+                                }
+                            });
+
+                        }
+                    });
+                }
+            });
+        </script>
+
+    }
+
+    @section innerscript {
+
+        var table;
+        table = $('#datatable').DataTable();
+
+        $("#search").click(function () {
+        table.draw();
+        });
+
+        jQuery('#datatable_wrapper .dataTables_filter input').addClass("form-control input-small input-inline"); // modify table search input
+        jQuery('#datatable_wrapper .dataTables_length select').addClass("form-control input-small"); // modify table per page dropdown
+        jQuery('#datatable_wrapper .dataTables_length select').select2(); // initialize select2 dropdown
+
+
+
+
+    }
+
+
+
